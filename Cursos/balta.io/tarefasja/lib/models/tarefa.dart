@@ -1,11 +1,11 @@
-class Item {
+class Tarefa {
   String descricao;
   String anotacao;
   bool feito;
 
-  Item({this.anotacao, this.feito});
+  Tarefa({this.descricao, this.anotacao, this.feito = false});
 
-  Item.fromJson(Map<String, dynamic> json) {
+  Tarefa.fromJson(Map<String, dynamic> json) {
     descricao = json['descricao'];
     anotacao = json['anotacao'];
     feito = json['feito'];

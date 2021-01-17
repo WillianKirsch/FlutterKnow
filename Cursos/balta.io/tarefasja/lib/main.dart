@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'models/item.dart';
+import 'package:tarefas_ja/models/tarefa.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,16 +22,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
+var tarefas = new List<Tarefa>();
+
 class InicioPage extends StatefulWidget {
   InicioPage({Key key, this.titulo}) : super(key: key) {
-    itens = [];
-    itens.add(Item(anotacao: "Banana", feito: false));
-    itens.add(Item(anotacao: "Maça", feito: true));
+    tarefas = [];
   }
 
   final String titulo;
-
-  var itens = new List<Item>();
 
   @override
   _InicioPageState createState() => _InicioPageState();
@@ -40,108 +37,265 @@ class InicioPage extends StatefulWidget {
 
 class _InicioPageState extends State<InicioPage> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext inicioContext) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.titulo),
         leading: Icon(Icons.menu),
         actions: <Widget>[
-          Icon(
-            Icons.mark_email_read,
-          ),
-          Icon(
-            Icons.mail,
+          IconButton(
+            icon: Icon(Icons.filter_list),
+            tooltip: 'Ordenar por Descrição',
+            onPressed: () {
+              setState(() {
+                tarefas.sort((tarefaA, tarefaB) =>
+                    tarefaA.descricao.compareTo(tarefaB.descricao));
+              });
+            },
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: widget.itens.length,
-        itemBuilder: (BuildContext context, int index) {
-          final item = widget.itens[index];
-          return Card(
-            elevation: 6,
-            child: CheckboxListTile(
-              key: Key(index.toString()),
-              title: Text(item.anotacao),
-              value: item.feito,
-              onChanged: (valor) {
-                setState(() {
-                  item.feito = valor;
-                });
-              },
+      body: Stack(
+        children: [
+          Visibility(
+            visible: tarefas.isEmpty,
+            child: Center(
+              child: Container(
+                child: Text("Insira as suas tarefas aqui. :D"),
+              ),
             ),
-          );
-        },
+          ),
+          ListView.builder(
+            itemCount: tarefas.length,
+            itemBuilder: (BuildContext itemContext, int index) {
+              final tarefa = tarefas[index];
+              return Dismissible(
+                key: Key(index.toString()),
+                background: _slideRightBackground(),
+                secondaryBackground: _slideLeftBackground(),
+                confirmDismiss: (DismissDirection direction) async {
+                  if (direction == DismissDirection.endToStart) {
+                    final bool res = await showDialog(
+                        context: itemContext,
+                        builder: (BuildContext builderContext) {
+                          return AlertDialog(
+                            content: Text(
+                                "Tem certeza de que deseja remover \"${tarefas[index].descricao}\"?"),
+                            actions: <Widget>[
+                              FlatButton(
+                                child: Text(
+                                  "Cancelar",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(builderContext);
+                                },
+                              ),
+                              FlatButton(
+                                child: Text(
+                                  "Remover",
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(builderContext);
+                                  setState(() {
+                                    _removerTarefa(itemContext, index);
+                                  });
+                                },
+                              ),
+                            ],
+                          );
+                        });
+                    return res;
+                  } else {
+                    _detalhesTarefa(tarefas[index]);
+                    return false;
+                  }
+                },
+                child: Card(
+                  elevation: 6,
+                  child: CheckboxListTile(
+                    title: Text(tarefa.descricao ?? ""),
+                    subtitle: Text(tarefa.anotacao ?? ""),
+                    value: tarefa.feito,
+                    onChanged: (valor) {
+                      setState(() {
+                        tarefa.feito = valor;
+                      });
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
-      // Center(
-      //   child: Column(
-      //     mainAxisAlignment: MainAxisAlignment.center,
-      //     children: <Widget>[
-      //       Text(
-      //         'Ebaa:',
-      //       ),
-      //       Text(
-      //         'Aqui seria o número',
-      //         style: Theme.of(context).textTheme.headline4,
-      //       ),
-      //     ],
-      //   ),
-      // ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _novoItem,
-        tooltip: 'Adicionar item',
+        onPressed: () => _detalhesTarefa(null),
+        tooltip: 'Adicionar tarefa',
         child: Icon(Icons.add),
       ),
     );
   }
 
-  Future<void> _novoItem() async {
-    int _quantidadeMaxCaracteresTitulo = 100;
-    Item _item = Item();
+  Widget _slideRightBackground() {
+    return Container(
+      color: Colors.green,
+      child: Align(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            SizedBox(
+              width: 20,
+            ),
+            Icon(
+              Icons.edit,
+              color: Colors.white,
+            ),
+            Text(
+              "Editar",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.left,
+            ),
+          ],
+        ),
+        alignment: Alignment.centerLeft,
+      ),
+    );
+  }
+
+  Widget _slideLeftBackground() {
+    return Container(
+      color: Colors.red,
+      child: Align(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            Icon(
+              Icons.delete,
+              color: Colors.white,
+            ),
+            Text(
+              "Deletar",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.right,
+            ),
+            SizedBox(
+              width: 20,
+            ),
+          ],
+        ),
+        alignment: Alignment.centerRight,
+      ),
+    );
+  }
+
+  Future<void> _detalhesTarefa(Tarefa _tarefa) async {
+    final _formKey = GlobalKey<FormState>();
+
+    int _quantidadeMaxCaracteresDescricao = 100;
+    int _quantidadeMaxCaracteresAnotacao = 500;
+
+    var _descricaoController = TextEditingController();
+    var _anotacaoController = TextEditingController();
+
+    bool _adicionando = false;
+    if (_tarefa == null) {
+      _adicionando = true;
+      _tarefa = new Tarefa();
+    } else {
+      _descricaoController.text = _tarefa.descricao;
+      _anotacaoController.text = _tarefa.anotacao;
+      _tarefa.feito = _tarefa.feito;
+    }
+
     await showDialog(
         context: context,
-        builder: (BuildContext context) {
+        builder: (BuildContext dialogContext) {
           return SimpleDialog(
-            title: Text('Novo item'),
+            title: Text(_adicionando ? 'Nova tarefa' : 'Editando tarefa'),
             contentPadding: EdgeInsets.only(left: 24, right: 24, top: 12),
             children: <Widget>[
-              TextFormField(
-                autocorrect: true,
-                autofocus: true,
-                enableSuggestions: true,
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(
-                  labelText: "Descrição",
-                  helperText: "Até $_quantidadeMaxCaracteresTitulo caracteres",
-                  border: OutlineInputBorder(),
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _descricaoController,
+                      autocorrect: true,
+                      autofocus: true,
+                      enableSuggestions: true,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: "Descrição",
+                        helperText:
+                            "Até $_quantidadeMaxCaracteresDescricao caracteres",
+                        border: OutlineInputBorder(),
+                      ),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'A descrição é obrigatória';
+                        }
+                        return null;
+                      },
+                      maxLength: _quantidadeMaxCaracteresDescricao,
+                    ),
+                    TextFormField(
+                      controller: _anotacaoController,
+                      autocorrect: true,
+                      autofocus: true,
+                      enableSuggestions: true,
+                      keyboardType: TextInputType.multiline,
+                      decoration: InputDecoration(
+                        labelText: "Anotação",
+                        helperText: "Descreva um pouco mais sobre a tarefa.",
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLength: _quantidadeMaxCaracteresAnotacao,
+                    ),
+                  ],
                 ),
-                maxLength: _quantidadeMaxCaracteresTitulo,
-              ),
-              TextFormField(
-                autocorrect: true,
-                autofocus: true,
-                enableSuggestions: true,
-                keyboardType: TextInputType.multiline,
-                decoration: InputDecoration(
-                  labelText: "Anotação",
-                  helperText: "Descreva um pouco mais sobre a tarefa.",
-                  border: OutlineInputBorder(),
-                ),
-                maxLength: _quantidadeMaxCaracteresTitulo,
               ),
               ButtonBar(
                 children: [
                   RaisedButton(
                     onPressed: () {
-                      //TODO: Salvar o item
-                      Navigator.pop(context);
+                      if (!_formKey.currentState.validate()) {
+                        return;
+                      }
+                      _tarefa.descricao = _descricaoController.text;
+                      _tarefa.anotacao = _anotacaoController.text;
+                      setState(() {
+                        if (_adicionando) {
+                          tarefas.add(_tarefa);
+                        }
+                      });
+                      Navigator.pop(dialogContext);
                     },
-                    child: Text("Adicionar"),
+                    child: Text("Salvar"),
                   )
                 ],
               )
             ],
           );
         });
+  }
+
+  _removerTarefa(_context, int index) {
+    setState(() {
+      tarefas.removeAt(index);
+    });
+    Scaffold.of(_context).showSnackBar(SnackBar(
+      content: Text("Tarefa removida!"),
+      backgroundColor: Colors.green,
+    ));
   }
 }
