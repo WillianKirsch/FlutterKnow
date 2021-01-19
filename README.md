@@ -29,6 +29,19 @@ https://app.balta.io/
 
 - https://appsco.pe/
 
+### Publicação
+
+Gerar a chave no Console Play Store
+
+keytool -genkey -v -keystore c:\Users\USER_NAME\key.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias key
+keytool -genkey -v -keystore C:\GitHub\Cursos\FlutterKnow\key.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias key
+
+- Android
+  flutter build appbundle
+
+- IoS
+  flutter build ios
+
 ### Coisas estranhas encontradas
 
 - Não aceita concatenação de string de objetos complexos com o uso do $.

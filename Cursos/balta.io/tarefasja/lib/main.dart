@@ -11,12 +11,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Tarefas já',
       debugShowCheckedModeBanner:
-          true, // Flag para mostrar ou não que está em ambiente de debug
+          false, // Flag para mostrar ou não que está em ambiente de debug
       theme: ThemeData(
         primarySwatch: Colors.purple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: InicioPage(titulo: 'Tarefas'),
+      home: InicioPage(titulo: 'Tarefas Já'),
     );
   }
 }
