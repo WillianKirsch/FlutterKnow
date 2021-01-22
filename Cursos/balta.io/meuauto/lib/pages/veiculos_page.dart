@@ -4,22 +4,25 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:meu_auto/models/veiculo.model.dart';
+import 'package:meu_auto/widgets/flk_appbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 var veiculos = new List<Veiculo>();
 
-class InicioPage extends StatefulWidget {
-  InicioPage({Key key, this.titulo}) : super(key: key) {
+class VeiculosPage extends StatefulWidget {
+  VeiculosPage({Key key}) : super(key: key) {
     veiculos = [];
   }
 
-  final String titulo;
+  final String titulo = 'Meus autos';
 
   @override
-  _InicioPageState createState() => _InicioPageState();
+  _VeiculosPageState createState() => _VeiculosPageState();
 }
 
-class _InicioPageState extends State<InicioPage> {
+class _VeiculosPageState extends State<VeiculosPage> {
+  final _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   @override
   void initState() {
     super.initState();
@@ -29,9 +32,12 @@ class _InicioPageState extends State<InicioPage> {
   @override
   Widget build(BuildContext inicioContext) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.titulo),
-        //leading: Icon(Icons.menu),
+      key: _scaffoldKey,
+      backgroundColor: Theme.of(context).backgroundColor,
+      drawer: FlkDrawer(),
+      appBar: FlkAppBar(
+        widget.titulo,
+        scaffoldKey: _scaffoldKey,
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.filter_list),
