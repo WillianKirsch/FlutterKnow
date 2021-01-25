@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:meu_auto/widgets/flk_appbar.dart';
 import 'package:meu_auto/widgets/flk_input_label.dart';
+import 'package:meu_auto/widgets/flk_loading_button.dart';
 
 class AlcoolGasolina extends StatelessWidget {
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _gasController = new MoneyMaskedTextController();
   final _alcoolController = new MoneyMaskedTextController();
+  bool calcularNovamente = false;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class AlcoolGasolina extends StatelessWidget {
       body: ListView(
         children: <Widget>[
           SizedBox(
-            height: 60,
+            height: 30,
           ),
           Image.asset(
             "assets/images/aog-white.png",
@@ -40,7 +42,33 @@ class AlcoolGasolina extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           SizedBox(
-            height: 20,
+            height: 30,
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 30, left: 30, right: 30),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(25),
+            ),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 30,
+                ),
+                Text(
+                  "Compensa utilizar álcool",
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontSize: 40,
+                    fontFamily: "Big Shoulders Display",
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(
+                  height: 30,
+                ),
+              ],
+            ),
           ),
           FlkInputLabel(
             "Gasolina",
@@ -53,24 +81,11 @@ class AlcoolGasolina extends StatelessWidget {
             "Álcool",
             controller: _alcoolController,
           ),
-          Container(
-            height: 60,
-            margin: EdgeInsets.all(30),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(60),
-            ),
-            child: FlatButton(
-              child: Text(
-                "CALCULAR",
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontSize: 25,
-                  fontFamily: "Big Shoulders Display",
-                ),
-              ),
-              onPressed: () {},
-            ),
+          FlkLoadingButton(
+            texto: "CALCULAR",
+            funcao: () {},
+            carregando: true,
+            inverter: true,
           )
         ],
       ),
