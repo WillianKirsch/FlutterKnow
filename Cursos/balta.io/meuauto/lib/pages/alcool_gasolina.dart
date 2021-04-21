@@ -8,7 +8,6 @@ class AlcoolGasolina extends StatelessWidget {
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _gasController = new MoneyMaskedTextController();
   final _alcoolController = new MoneyMaskedTextController();
-  bool calcularNovamente = false;
 
   @override
   Widget build(BuildContext context) {

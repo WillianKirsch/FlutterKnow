@@ -27,7 +27,7 @@ class FlkLoadingButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(60),
       ),
       child: !carregando
-          ? FlatButton(
+          ? TextButton(
               child: Text(
                 texto,
                 style: TextStyle(

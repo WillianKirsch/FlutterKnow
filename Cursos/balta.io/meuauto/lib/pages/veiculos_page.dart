@@ -7,7 +7,7 @@ import 'package:meu_auto/models/veiculo.model.dart';
 import 'package:meu_auto/widgets/flk_appbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-var veiculos = new List<Veiculo>();
+var veiculos = [];
 
 class VeiculosPage extends StatefulWidget {
   VeiculosPage({Key key}) : super(key: key) {
@@ -78,7 +78,7 @@ class _VeiculosPageState extends State<VeiculosPage> {
                             content: Text(
                                 "Tem certeza de que deseja remover \"${veiculos[index].placa}\"?"),
                             actions: <Widget>[
-                              FlatButton(
+                              TextButton(
                                 child: Text(
                                   "Cancelar",
                                   style: TextStyle(color: Colors.black),
@@ -87,7 +87,7 @@ class _VeiculosPageState extends State<VeiculosPage> {
                                   Navigator.pop(builderContext);
                                 },
                               ),
-                              FlatButton(
+                              TextButton(
                                 child: Text(
                                   "Remover",
                                   style: TextStyle(color: Colors.red),
@@ -283,7 +283,7 @@ class _VeiculosPageState extends State<VeiculosPage> {
               ),
               ButtonBar(
                 children: [
-                  RaisedButton(
+                  ElevatedButton(
                     onPressed: () {
                       if (!_formKey.currentState.validate()) {
                         return;
@@ -312,7 +312,7 @@ class _VeiculosPageState extends State<VeiculosPage> {
       veiculos.removeAt(index);
     });
     _salvarVeiculos();
-    Scaffold.of(_context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("Tarefa removida!"),
       backgroundColor: Colors.green,
     ));
