@@ -1,4 +1,4 @@
-name: DevQuiz
+name: dev_quiz
 description: Projeto desenvolvido na edição 5 do NLW por Willian Kirsch.
 
 # The following line prevents the package from being accidentally published to
@@ -28,6 +28,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   google_fonts: ^2.0.0
+  share_plus: ^2.0.1
 
 dev_dependencies:
   flutter_test:
@@ -45,6 +46,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/database/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
