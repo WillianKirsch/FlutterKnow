@@ -1,7 +1,7 @@
 class Tarefa {
-  String descricao;
-  String anotacao;
-  bool feito;
+  String? descricao;
+  String? anotacao;
+  bool feito = false;
 
   Tarefa({this.descricao, this.anotacao, this.feito = false});
 

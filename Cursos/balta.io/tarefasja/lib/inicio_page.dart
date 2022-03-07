@@ -1,15 +1,18 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tarefas_ja/models/tarefa.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tarefas_ja/models/tarefa.dart';
 
-var tarefas = new List<Tarefa>();
+var tarefas = [];
+enum Availability { loading, available, unavailable }
 
 class InicioPage extends StatefulWidget {
-  InicioPage({Key key, this.titulo}) : super(key: key) {
+  InicioPage({Key? key, required this.titulo}) : super(key: key) {
     tarefas = [];
   }
 
@@ -20,10 +23,37 @@ class InicioPage extends StatefulWidget {
 }
 
 class _InicioPageState extends State<InicioPage> {
+  final InAppReview _inAppReview = InAppReview.instance;
+  Availability _availability = Availability.loading;
+
+  Future<void> _requestReview() => _inAppReview.requestReview();
+
+  Future<void> _openStoreListing() => _inAppReview.openStoreListing(
+        appStoreId: '',
+        microsoftStoreId: '',
+      );
+
   @override
   void initState() {
     super.initState();
     _carregarTarefas();
+
+    WidgetsBinding.instance!.addPostFrameCallback((_) async {
+      try {
+        final isAvailable = await _inAppReview.isAvailable();
+
+        setState(() {
+          // This plugin cannot be tested on Android by installing your app
+          // locally. See https://github.com/britannio/in_app_review#testing for
+          // more information.
+          _availability = isAvailable && !Platform.isAndroid
+              ? Availability.available
+              : Availability.unavailable;
+        });
+      } catch (_) {
+        setState(() => _availability = Availability.unavailable);
+      }
+    });
   }
 
   @override
@@ -33,6 +63,16 @@ class _InicioPageState extends State<InicioPage> {
         title: Text(widget.titulo),
         //leading: Icon(Icons.menu),
         actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.store),
+            tooltip: 'Abrir loja',
+            onPressed: _openStoreListing,
+          ),
+          IconButton(
+            icon: Icon(Icons.star),
+            tooltip: 'Avaliar',
+            onPressed: _requestReview,
+          ),
           IconButton(
             icon: Icon(Icons.filter_list),
             tooltip: 'Ordenar por Descrição',
@@ -72,7 +112,7 @@ class _InicioPageState extends State<InicioPage> {
                             content: Text(
                                 "Tem certeza de que deseja remover \"${tarefas[index].descricao}\"?"),
                             actions: <Widget>[
-                              FlatButton(
+                              TextButton(
                                 child: Text(
                                   "Cancelar",
                                   style: TextStyle(color: Colors.black),
@@ -81,7 +121,7 @@ class _InicioPageState extends State<InicioPage> {
                                   Navigator.pop(builderContext);
                                 },
                               ),
-                              FlatButton(
+                              TextButton(
                                 child: Text(
                                   "Remover",
                                   style: TextStyle(color: Colors.red),
@@ -207,7 +247,7 @@ class _InicioPageState extends State<InicioPage> {
     await _sharedPreferences.setString('tarefas', jsonEncode(tarefas));
   }
 
-  Future<void> _detalhesTarefa(Tarefa _tarefa) async {
+  Future<void> _detalhesTarefa(Tarefa? _tarefa) async {
     final _formKey = GlobalKey<FormState>();
 
     int _quantidadeMaxCaracteresDescricao = 100;
@@ -221,8 +261,8 @@ class _InicioPageState extends State<InicioPage> {
       _adicionando = true;
       _tarefa = new Tarefa();
     } else {
-      _descricaoController.text = _tarefa.descricao;
-      _anotacaoController.text = _tarefa.anotacao;
+      _descricaoController.text = _tarefa.descricao ?? '';
+      _anotacaoController.text = _tarefa.anotacao ?? '';
       _tarefa.feito = _tarefa.feito;
     }
 
@@ -252,7 +292,7 @@ class _InicioPageState extends State<InicioPage> {
                       ),
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       validator: (value) {
-                        if (value.isEmpty) {
+                        if (value == null || value.isEmpty) {
                           return 'A descrição é obrigatória';
                         }
                         return null;
@@ -277,12 +317,13 @@ class _InicioPageState extends State<InicioPage> {
               ),
               ButtonBar(
                 children: [
-                  RaisedButton(
+                  ElevatedButton(
                     onPressed: () {
-                      if (!_formKey.currentState.validate()) {
+                      if (_formKey.currentState != null &&
+                          !_formKey.currentState!.validate()) {
                         return;
                       }
-                      _tarefa.descricao = _descricaoController.text;
+                      _tarefa!.descricao = _descricaoController.text;
                       _tarefa.anotacao = _anotacaoController.text;
                       _salvarTarefas();
                       setState(() {
