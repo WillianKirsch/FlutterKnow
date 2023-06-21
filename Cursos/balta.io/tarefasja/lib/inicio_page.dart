@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tarefas_ja/models/tarefa.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 var tarefas = [];
+
 enum Availability { loading, available, unavailable }
 
 class InicioPage extends StatefulWidget {
@@ -25,6 +25,59 @@ class InicioPage extends StatefulWidget {
 class _InicioPageState extends State<InicioPage> {
   final InAppReview _inAppReview = InAppReview.instance;
   Availability _availability = Availability.loading;
+  BannerAd? _bannerAd;
+  bool _isLoaded = false;
+
+  final String _adUnitId = Platform.isAndroid
+      ? 'ca-app-pub-4723696847331515/2511275395'
+      : 'ca-app-pub-3940256099942544/2934735716';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _isLoaded = false;
+    _loadAd();
+  }
+
+  /// Loads and shows a banner ad.
+  ///
+  /// Dimensions of the ad are determined by the width of the screen.
+  Future _loadAd() async {
+    // Get an AnchoredAdaptiveBannerAdSize before loading the ad.
+    final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+        MediaQuery.of(context).size.width.truncate());
+
+    if (size == null) {
+      // Unable to get width of anchored banner.
+      return;
+    }
+
+    BannerAd(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      size: size,
+      listener: BannerAdListener(
+        // Called when an ad is successfully received.
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+            _isLoaded = true;
+          });
+        },
+        // Called when an ad request failed.
+        onAdFailedToLoad: (ad, err) {
+          ad.dispose();
+        },
+        // Called when an ad opens an overlay that covers the screen.
+        onAdOpened: (Ad ad) {},
+        // Called when an ad removes an overlay that covers the screen.
+        onAdClosed: (Ad ad) {},
+        // Called when an impression occurs on the ad.
+        onAdImpression: (Ad ad) {},
+      ),
+    ).load();
+  }
 
   Future<void> _requestReview() => _inAppReview.requestReview();
 
@@ -58,6 +111,8 @@ class _InicioPageState extends State<InicioPage> {
 
   @override
   Widget build(BuildContext inicioContext) {
+    final bannerHeight = _bannerAd?.size.height.toDouble() ?? 0;
+    final showBannerAds = _bannerAd != null && _isLoaded;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.titulo),
@@ -159,6 +214,12 @@ class _InicioPageState extends State<InicioPage> {
               );
             },
           ),
+          if (showBannerAds)
+            SizedBox(
+              width: _bannerAd!.size.width.toDouble(),
+              height: bannerHeight,
+              child: AdWidget(ad: _bannerAd!),
+            ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -347,7 +408,7 @@ class _InicioPageState extends State<InicioPage> {
       tarefas.removeAt(index);
     });
     _salvarTarefas();
-    Scaffold.of(_context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("Tarefa removida!"),
       backgroundColor: Colors.green,
     ));

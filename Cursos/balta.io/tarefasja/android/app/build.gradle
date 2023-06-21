@@ -49,8 +49,9 @@ android {
 
     defaultConfig {
         applicationId "com.williankirsch.tarefasja"
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        minSdkVersion 19
+        multiDexEnabled true
+        targetSdkVersion 32
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
