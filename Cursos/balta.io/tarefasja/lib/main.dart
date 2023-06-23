@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tarefas_ja/inicio_page.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'color_schemes.g.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   MobileAds.instance.initialize();
@@ -17,8 +19,12 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner:
           false, // Flag para mostrar ou não que está em ambiente de debug
       theme: ThemeData(
-        primarySwatch: Colors.purple,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        useMaterial3: true,
+        colorScheme: lightColorScheme,
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: darkColorScheme,
       ),
       home: InicioPage(titulo: 'Tarefas Já'),
     );
