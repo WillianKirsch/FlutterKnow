@@ -29,7 +29,7 @@ class _InicioPageState extends State<InicioPage> {
   bool _isLoaded = false;
 
   final String _adUnitId = Platform.isAndroid
-      ? 'ca-app-pub-4723696847331515/2511275395'
+      ? 'ca-app-pub-4723696847331515/8312681545'
       : 'ca-app-pub-3940256099942544/2934735716';
 
   @override
@@ -140,79 +140,83 @@ class _InicioPageState extends State<InicioPage> {
           ),
         ],
       ),
-      body: Stack(
+      body: Column(
         children: [
           Visibility(
             visible: tarefas.isEmpty,
-            child: Center(
-              child: Container(
-                child: Text("Insira as suas tarefas aqui. :D"),
+            child: Expanded(
+              child: Center(
+                child: Container(
+                  child: Text("Insira as suas tarefas aqui. :D"),
+                ),
               ),
             ),
           ),
-          ListView.builder(
-            itemCount: tarefas.length,
-            itemBuilder: (BuildContext itemContext, int index) {
-              final tarefa = tarefas[index];
-              return Dismissible(
-                key: Key(index.toString()),
-                background: _slideRightBackground(),
-                secondaryBackground: _slideLeftBackground(),
-                confirmDismiss: (DismissDirection direction) async {
-                  if (direction == DismissDirection.endToStart) {
-                    final bool res = await showDialog(
-                        context: itemContext,
-                        builder: (BuildContext builderContext) {
-                          return AlertDialog(
-                            content: Text(
-                                "Tem certeza de que deseja remover \"${tarefas[index].descricao}\"?"),
-                            actions: <Widget>[
-                              TextButton(
-                                child: Text(
-                                  "Cancelar",
-                                  style: TextStyle(color: Colors.black),
+          Expanded(
+            child: ListView.builder(
+              itemCount: tarefas.length,
+              itemBuilder: (BuildContext itemContext, int index) {
+                final tarefa = tarefas[index];
+                return Dismissible(
+                  key: Key(index.toString()),
+                  background: _slideRightBackground(),
+                  secondaryBackground: _slideLeftBackground(),
+                  confirmDismiss: (DismissDirection direction) async {
+                    if (direction == DismissDirection.endToStart) {
+                      final bool res = await showDialog(
+                          context: itemContext,
+                          builder: (BuildContext builderContext) {
+                            return AlertDialog(
+                              content: Text(
+                                  "Tem certeza de que deseja remover \"${tarefas[index].descricao}\"?"),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text(
+                                    "Cancelar",
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(builderContext);
+                                  },
                                 ),
-                                onPressed: () {
-                                  Navigator.pop(builderContext);
-                                },
-                              ),
-                              TextButton(
-                                child: Text(
-                                  "Remover",
-                                  style: TextStyle(color: Colors.red),
+                                TextButton(
+                                  child: Text(
+                                    "Remover",
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(builderContext);
+                                    setState(() {
+                                      _removerTarefa(itemContext, index);
+                                    });
+                                  },
                                 ),
-                                onPressed: () {
-                                  Navigator.pop(builderContext);
-                                  setState(() {
-                                    _removerTarefa(itemContext, index);
-                                  });
-                                },
-                              ),
-                            ],
-                          );
+                              ],
+                            );
+                          });
+                      return res;
+                    } else {
+                      _detalhesTarefa(tarefas[index]);
+                      return false;
+                    }
+                  },
+                  child: Card(
+                    elevation: 6,
+                    child: CheckboxListTile(
+                      title: Text(tarefa.descricao ?? ""),
+                      subtitle: Text(tarefa.anotacao ?? ""),
+                      value: tarefa.feito,
+                      onChanged: (valor) {
+                        setState(() {
+                          tarefa.feito = valor;
+                          _salvarTarefas();
                         });
-                    return res;
-                  } else {
-                    _detalhesTarefa(tarefas[index]);
-                    return false;
-                  }
-                },
-                child: Card(
-                  elevation: 6,
-                  child: CheckboxListTile(
-                    title: Text(tarefa.descricao ?? ""),
-                    subtitle: Text(tarefa.anotacao ?? ""),
-                    value: tarefa.feito,
-                    onChanged: (valor) {
-                      setState(() {
-                        tarefa.feito = valor;
-                        _salvarTarefas();
-                      });
-                    },
+                      },
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
           if (showBannerAds)
             SizedBox(
