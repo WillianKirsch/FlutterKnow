@@ -21,6 +21,3 @@ doc/api/
 *.js.map
 
 .history
-
-*.jks
-
